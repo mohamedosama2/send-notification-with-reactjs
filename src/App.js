@@ -1,25 +1,46 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import firebase from "./firebase";
+import axios from 'axios'
+export default class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      title:"",
+      body:"",
+      token:""
+    };
+  }
+  componentDidMount() {
+    // console.log("here")
+    const messaging = firebase.messaging();
+    messaging
+      .requestPermission()
+      .then(() => {
+        return messaging.getToken();
+      })
+      .then((token) => {
+        console.log("Token : ", token);
+        this.setState({token})
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+  render() {
+    return <div>
+    title:  <input type="text" onChange={(e)=>this.setState({title:e.target.value})} />
+    body:  <input type="text" onChange={(e)=>this.setState({body:e.target.value})} />
+    <button onClick={async()=>{
+      if(this.state.token!==""){
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+        const res=await axios.post("http://localhost:8080/sendNotification",{
+          title:this.state.title,
+          body:this.state.body,
+          deviceToken:this.state.token
+        })
+        console.log(res)
+      }
+    }}>Send</button>
+    </div>;
+  }
 }
-
-export default App;
